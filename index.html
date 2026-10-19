@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>2-EHA Cellpose ROS Protocol</title>
+<meta name="description" content="How CellROX and MitoSOX signals were measured cell by cell in 2-EHA-treated Caco-2 cells with Cellpose (KNS 2026 poster supplement).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: phone-first single column (opened from a poster QR); real-image pipeline, results, trust checks, settings, code */
+:root{
+  color-scheme:light;
+  --bg:#f5f8fb; --surface:#ffffff; --fg:#0f1d2b; --muted:#566676; --line:#d8e1ea;
+  --navy:#16325c; --accent:#1f6fb2; --accent-soft:#e3eef8; --green:#1f8a4c; --red:#c43b3b;
+  --code-bg:#0f1d2b; --code-fg:#dce9f5; --fig-bg:#ffffff;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0b141e; --surface:#122030; --fg:#e4edf6; --muted:#9db0c2; --line:#24384d;
+  --navy:#9fc3ef; --accent:#6db1ec; --accent-soft:#16304a; --green:#5fd391; --red:#f08080;
+  --code-bg:#070d14; --code-fg:#cfe3f6; --fig-bg:#ffffff; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+section,.panel,.wrap>*{min-width:0}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 56px}
+img{max-width:100%;display:block}
+.wrap{max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+header{display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:clamp(26px,5vw,36px);line-height:1.2;margin:0;color:var(--navy);text-wrap:balance}
+h2{font-size:22px;line-height:1.3;margin:0;color:var(--navy);text-wrap:balance}
+h3{font-size:17px;margin:0;color:var(--fg)}
+p{margin:0}
+.lede{color:var(--muted);max-width:66ch}
+section{display:flex;flex-direction:column;gap:16px}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font-size:13px;font-family:var(--f-mono);color:var(--accent);text-decoration:none;border:1px solid var(--line);background:var(--surface);padding:4px 10px;border-radius:999px}
+nav a:focus-visible,nav a:hover{border-color:var(--accent)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font-size:24px;color:var(--navy);font-variant-numeric:tabular-nums}
+.stat span{font-size:13px;color:var(--muted);line-height:1.4}
+@media (max-width:600px){.stats{grid-template-columns:1fr}}
+.problem{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:600px){.problem{grid-template-columns:1fr}}
+.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.step{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.step img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:8px;background:#000}
+.step figcaption{display:flex;flex-direction:column;gap:2px}
+.step .n{font-family:var(--f-mono);font-size:11px;color:var(--accent);letter-spacing:.06em}
+.step b{font-size:15px;line-height:1.3}
+.step span.d{font-size:13px;color:var(--muted);line-height:1.4}
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.calc code{font-family:var(--f-mono);font-size:14px;color:var(--fg);overflow-wrap:anywhere}
+.fig{margin:0;display:flex;flex-direction:column;gap:8px;min-width:0}
+.fig .frame{background:var(--fig-bg);border:1px solid var(--line);border-radius:8px;padding:8px;overflow-x:auto}
+.fig .frame img{width:100%}
+.fig figcaption{font-size:13px;color:var(--muted);line-height:1.5}
+.fig figcaption b{color:var(--fg)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font:500 14px var(--f-body);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--accent);border-color:var(--accent);background:var(--accent-soft)}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel{display:flex;flex-direction:column;gap:12px}
+.trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card b{color:var(--navy)}
+.card p{font-size:14px;color:var(--muted)}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:16px;align-items:center}
+@media (max-width:640px){.duo{grid-template-columns:1fr}}
+.duo .frame{background:var(--fig-bg);border:1px solid var(--line);border-radius:8px;padding:8px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-weight:600;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+td.k{color:var(--muted);white-space:nowrap}
+td code{font-family:var(--f-mono);font-size:13px}
+pre{background:var(--code-bg);color:var(--code-fg);font-family:var(--f-mono);font-size:13px;line-height:1.55;padding:16px 18px;border-radius:8px;overflow-x:auto;margin:0}
+.note{font-size:14px;color:var(--muted);max-width:70ch}
+footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:4px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">KNS 2026 · Poster supplement · Chungnam National University</div>
+  <h1>Measuring ROS in every Caco-2 cell with Cellpose</h1>
+  <p class="lede">CellROX (cytosolic ROS) and MitoSOX (mitochondrial superoxide) images from Caco-2 cells treated with 2-ethylhexanoic acid (2-EHA) were analysed cell by cell. Cellpose, a deep-learning segmentation model, outlines each cell. Fluorescence is then measured inside every cell and divided by the number of cells, instead of being read from a whole field.</p>
+  <nav aria-label="Sections">
+    <a href="#why">Why</a><a href="#pipeline">Pipeline</a><a href="#results">Results</a><a href="#trust">Reliability</a><a href="#code">Code</a>
+  </nav>
+</header>
+
+<section aria-label="Data analysed">
+  <div class="stats">
+    <div class="stat"><b>33,333</b><span>cells segmented and measured across both experiments</span></div>
+    <div class="stat"><b>539</b><span>image fields / wells, 24–96 h</span></div>
+    <div class="stat"><b>2</b><span>independent experiments (Exp3, Exp4) analysed with the same approach</span></div>
+  </div>
+</section>
+
+<section id="why">
+  <h2>Why single-cell analysis</h2>
+  <div class="problem">
+    <div class="card"><b>Counting by hand did not scale</b><p>Measuring each cell in ImageJ meant drawing or thresholding cell by cell. With 4 time points, 10+ conditions and several fields each, this was hundreds of images and could not be done consistently.</p></div>
+    <div class="card"><b>Caco-2 grows in tight colonies</b><p>Cells pile up and touch, so a simple threshold (or ImageJ watershed) merges neighbours into one object. Cellpose was trained to split touching cells and handles colonies much better.</p></div>
+  </div>
+  <p class="note">Cellpose (Stringer et al., Nat Methods 2021) predicts, for every pixel, the direction toward the centre of its cell, and follows those directions to separate cells that touch. The analysis runs on all images at once with one fixed setting.</p>
+</section>
+
+<section id="pipeline">
+  <h2>The pipeline, on one real image</h2>
+  <p class="lede">Exp4, 72 h, 1 mM 2-EHA, field 1 (EVOS 40×, raw 12-bit file).</p>
+  <div class="pipe">
+    <figure class="step"><img src="img/s1_dapi.jpg" alt="DAPI channel of two Caco-2 colonies" loading="lazy"><figcaption><span class="n">STEP 1</span><b>DAPI (raw)</b><span class="d">Nuclei, raw channel at a fixed display range.</span></figcaption></figure>
+    <figure class="step"><img src="img/s2_cellrox.jpg" alt="CellROX green channel" loading="lazy"><figcaption><span class="n">STEP 2</span><b>CellROX (raw)</b><span class="d">Cytosolic ROS from the same field.</span></figcaption></figure>
+    <figure class="step"><img src="img/s3_mitosox.jpg" alt="MitoSOX red channel" loading="lazy"><figcaption><span class="n">STEP 3</span><b>MitoSOX (raw)</b><span class="d">Mitochondrial superoxide from the same field.</span></figcaption></figure>
+    <figure class="step"><img src="img/s4_input.jpg" alt="Cellpose input composite" loading="lazy"><figcaption><span class="n">STEP 4</span><b>Cellpose input</b><span class="d">Cytoplasm signal + DAPI, each scaled 1–99.8%.</span></figcaption></figure>
+    <figure class="step"><img src="img/s5_nuclei.jpg" alt="Nuclei outlined in magenta" loading="lazy"><figcaption><span class="n">STEP 5</span><b>Nuclei</b><span class="d">Found from DAPI; used to count cells and check masks (60 nuclei).</span></figcaption></figure>
+    <figure class="step"><img src="img/s6_masks.jpg" alt="Each segmented cell in a different colour" loading="lazy"><figcaption><span class="n">STEP 6</span><b>Cell masks</b><span class="d">One colour per cell. Touching cells in the colony are split (65 cells).</span></figcaption></figure>
+    <figure class="step"><img src="img/s7_overlay.jpg" alt="Yellow cell outlines over the merged image" loading="lazy"><figcaption><span class="n">STEP 7</span><b>QC overlay</b><span class="d">Outlines on the merge, saved for every field and checked by eye.</span></figcaption></figure>
+    <div class="calc" style="align-self:stretch">
+      <span class="n" style="font-family:var(--f-mono);font-size:11px;color:var(--accent)">STEP 8</span>
+      <b>Per-cell value</b>
+      <code>cell = mean(signal in cell) − background</code>
+      <code>field = Σ cells ÷ number of cells</code>
+      <code>fold = field ÷ DMSO (same time)</code>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <h2>Results</h2>
+  <p class="lede">Each dot is one field (Exp3 CellROX, Exp4) or one well (Exp3 MitoSOX), shown as fold of DMSO at the same time point. Bars are mean ± SD.</p>
+  <div class="tabs" role="tablist" aria-label="Result graphs">
+    <button role="tab" id="t-cmp" aria-controls="p-cmp" aria-selected="true">Exp3 vs Exp4</button>
+    <button role="tab" id="t-e4" aria-controls="p-e4" aria-selected="false">Exp4</button>
+    <button role="tab" id="t-e3" aria-controls="p-e3" aria-selected="false">Exp3</button>
+  </div>
+
+  <div class="panel" role="tabpanel" id="p-cmp" aria-labelledby="t-cmp">
+    <figure class="fig">
+      <div class="frame"><img src="img/g_exp3_vs_exp4.png" alt="CellROX fold vs DMSO for Exp3 and Exp4 at 24, 48, 72 and 96 h" loading="lazy"></div>
+      <figcaption><b>CellROX, Exp3 vs Exp4.</b> 2-EHA raised ROS above DMSO at every time point in both experiments (roughly 2–7-fold). The direction agrees between experiments. Absolute fold values are compared within each experiment, not across them.</figcaption>
+    </figure>
+  </div>
+
+  <div class="panel" role="tabpanel" id="p-e4" aria-labelledby="t-e4" hidden>
+    <figure class="fig">
+      <div class="frame"><img src="img/g_exp4_ros.png" alt="Exp4 CellROX fold vs DMSO by condition and time" loading="lazy"></div>
+      <figcaption><b>Exp4, CellROX.</b> 168 fields, 16,979 cells. Raw 12-bit images, corrected for exposure time.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="frame"><img src="img/g_exp4_mitosox.png" alt="Exp4 MitoSOX fold vs DMSO by condition and time" loading="lazy"></div>
+      <figcaption><b>Exp4, MitoSOX.</b> Same cells as above. Mitochondrial superoxide rose 2–4-fold with 2-EHA. Fields with more than 1% saturated pixels were excluded, so a few bars have fewer points.</figcaption>
+    </figure>
+  </div>
+
+  <div class="panel" role="tabpanel" id="p-e3" aria-labelledby="t-e3" hidden>
+    <figure class="fig">
+      <div class="frame"><img src="img/g_exp3_ros.png" alt="Exp3 CellROX fold vs DMSO by condition and time" loading="lazy"></div>
+      <figcaption><b>Exp3, CellROX.</b> 232 fields, 4,867 cells. Includes cytokine mix and VPA references.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="frame"><img src="img/g_exp3_mitosox.png" alt="Exp3 CellROX and MitoSOX per cell by time, rounds R4 and R5" loading="lazy"></div>
+      <figcaption><b>Exp3, CellROX and MitoSOX (rounds R4/R5).</b> 139 wells, 11,487 cells. Dots and triangles are the two rounds. 1 mM VPA and 10 nM TSA are HDAC-inhibitor references.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="trust">
+  <h2>Why the numbers can be trusted</h2>
+  <div class="duo">
+    <div class="frame"><img src="img/g_watershed_vs_cellpose.png" alt="Scatter plot of nuclei per field, Cellpose versus ImageJ watershed, r = 0.97" loading="lazy"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+      <h3>Cellpose agrees with the classic ImageJ method</h3>
+      <p class="note">Nuclei counted per field by Cellpose (y) and by ImageJ-style threshold + watershed (x) on the same Exp3 images: r = 0.97. Cellpose gives the same answer as the established method, but runs on hundreds of images without manual steps.</p>
+    </div>
+  </div>
+  <div class="trust">
+    <div class="card"><b>Cells are found without the readout</b><p>Segmentation does not depend on how bright ROS is in each cell, so dim cells are not dropped and the comparison between doses is not biased.</p></div>
+    <div class="card"><b>Raw data, no display edits</b><p>Exp4 was measured on the raw 12-bit files and divided by exposure time. Brightness-adjusted figure images were never measured.</p></div>
+    <div class="card"><b>One fixed setting for everything</b><p>The same model and parameters were used for every condition, time point and field, with no per-image tuning.</p></div>
+    <div class="card"><b>Saturation handled openly</b><p>Saturated pixels are counted for every field. Exp4 fields above 1% were excluded; Exp3 wells above 5% are marked as lower bounds.</p></div>
+    <div class="card"><b>Every overlay checked</b><p>A QC overlay and the mask file are saved for each field. Fields where Cellpose covered less than half of the stained area were left out of the per-cell values.</p></div>
+    <div class="card"><b>Normalised per cell</b><p>Values are averaged per cell, so a field with more cells does not look brighter just because it is more crowded.</p></div>
+  </div>
+</section>
+
+<section id="code">
+  <h2>Core code</h2>
+<pre>from cellpose import models
+import numpy as np
+from skimage import measure
+
+model = models.CellposeModel(gpu=True)              # Cellpose 4, cpsam
+img = np.stack([norm(ros + mitosox), norm(dapi), zeros], -1)
+cells = model.eval(img, flow_threshold=0.4, cellprob_threshold=0.0)[0]
+
+bg = np.median(ros[far_from_cells])                 # background per image
+per_cell = [(ros[cells == r.label].mean() - bg) / exposure_s
+            for r in measure.regionprops(cells)]
+field_value = np.mean(per_cell)                     # signal per cell
+fold = field_value / dmso_mean_same_time</pre>
+</section>
+
+<footer>
+  <span>Kim JG, Cho JA. Department of Food and Nutrition, Chungnam National University. Contact: jacho@cnu.ac.kr</span>
+  <span>Cellpose: Stringer C. et al., Nat Methods 2021;18:100–106 · Pachitariu M. &amp; Stringer C., Nat Methods 2022;19:1634–1641.</span>
+  <span>AI use: analysis scripts were written with Anthropic Claude and checked by the authors.</span>
+</footer>
+</div>
+
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  function show(t){
+    tabs.forEach(function(b){
+      var on=b===t;
+      b.setAttribute('aria-selected',on?'true':'false');
+      b.tabIndex=on?0:-1;
+      document.getElementById(b.getAttribute('aria-controls')).hidden=!on;
+    });
+  }
+  tabs.forEach(function(b,i){
+    b.tabIndex=i?-1:0;
+    b.addEventListener('click',function(){show(b)});
+    b.addEventListener('keydown',function(e){
+      var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+      if(d){var n=tabs[(i+d+tabs.length)%tabs.length];show(n);n.focus();}
+    });
+  });
+})();
+</script>
+</body>
+</html>
