@@ -101,8 +101,8 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
 
 <section aria-label="Data analysed">
   <div class="stats">
-    <div class="stat"><b>33,333</b><span>cells segmented and measured across both experiments</span></div>
-    <div class="stat"><b>539</b><span>image fields / wells, 24–96 h</span></div>
+    <div class="stat"><b>36,719</b><span>cells segmented and measured across both experiments</span></div>
+    <div class="stat"><b>571</b><span>image fields / wells, 24–96 h</span></div>
     <div class="stat"><b>2</b><span>independent experiments (Exp3, Exp4) analysed with the same approach</span></div>
   </div>
 </section>
@@ -139,7 +139,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
 
 <section id="results">
   <h2>Results</h2>
-  <p class="lede">Each dot is one field (Exp3 CellROX, Exp4) or one well (Exp3 MitoSOX), shown as fold of DMSO at the same time point. Bars are mean ± SD.</p>
+  <p class="lede">Each dot is one field (Exp3 CellROX, Exp4) or one well (Exp3 MitoSOX), shown as fold of DMSO at the same time point. Bars are mean ± SD. Hollow points are Exp4 fields with more than 1% saturated pixels; their true value is at least as high as shown.</p>
   <div class="tabs" role="tablist" aria-label="Result graphs">
     <button role="tab" id="t-cmp" aria-controls="p-cmp" aria-selected="true">Exp3 vs Exp4</button>
     <button role="tab" id="t-e4" aria-controls="p-e4" aria-selected="false">Exp4</button>
@@ -156,11 +156,11 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
   <div class="panel" role="tabpanel" id="p-e4" aria-labelledby="t-e4" hidden>
     <figure class="fig">
       <div class="frame"><img src="img/g_exp4_ros.png" alt="Exp4 CellROX fold vs DMSO by condition and time" loading="lazy"></div>
-      <figcaption><b>Exp4, CellROX.</b> 168 fields, 16,979 cells. Raw 12-bit images, corrected for exposure time.</figcaption>
+      <figcaption><b>Exp4, CellROX.</b> 200 fields, 20,365 cells. Raw 12-bit images, corrected for exposure time.</figcaption>
     </figure>
     <figure class="fig">
       <div class="frame"><img src="img/g_exp4_mitosox.png" alt="Exp4 MitoSOX fold vs DMSO by condition and time" loading="lazy"></div>
-      <figcaption><b>Exp4, MitoSOX.</b> Same cells as above. Mitochondrial superoxide rose 2–4-fold with 2-EHA. Fields with more than 1% saturated pixels were excluded, so a few bars have fewer points.</figcaption>
+      <figcaption><b>Exp4, MitoSOX.</b> Same cells as above. Mitochondrial superoxide rose 2–7-fold with 2-EHA, highest at 4 mM and in the positive control. Saturated fields (hollow) are kept as lower bounds.</figcaption>
     </figure>
   </div>
 
@@ -189,7 +189,7 @@ footer{color:var(--muted);font-size:13px;border-top:1px solid var(--line);paddin
     <div class="card"><b>Cells are found without the readout</b><p>Segmentation does not depend on how bright ROS is in each cell, so dim cells are not dropped and the comparison between doses is not biased.</p></div>
     <div class="card"><b>Raw data, no display edits</b><p>Exp4 was measured on the raw 12-bit files and divided by exposure time. Brightness-adjusted figure images were never measured.</p></div>
     <div class="card"><b>One fixed setting for everything</b><p>The same model and parameters were used for every condition, time point and field, with no per-image tuning.</p></div>
-    <div class="card"><b>Saturation handled openly</b><p>Saturated pixels are counted for every field. Exp4 fields above 1% were excluded; Exp3 wells above 5% are marked as lower bounds.</p></div>
+    <div class="card"><b>Saturation handled openly</b><p>Saturated pixels are counted for every field. Fields above 1% (Exp4) or 5% (Exp3) are shown as hollow points: their real signal can only be higher, so the dose effect is, if anything, underestimated.</p></div>
     <div class="card"><b>Every overlay checked</b><p>A QC overlay and the mask file are saved for each field. Fields where Cellpose covered less than half of the stained area were left out of the per-cell values.</p></div>
     <div class="card"><b>Normalised per cell</b><p>Values are averaged per cell, so a field with more cells does not look brighter just because it is more crowded.</p></div>
   </div>
